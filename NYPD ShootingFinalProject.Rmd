@@ -1,0 +1,195 @@
+---
+title: "NYPD Shooting Information"
+author: "Divya Leela Mohan"
+date: "11/26/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+##### Introduction: This assignment will show the ability to complete all steps in the data science process in a reproducible manner. I have to produce a report on the NYPD Shooting Incident data that includes your own analysis of some type.
+### Step-1
+set our working directory
+```{r}
+getwd()
+```
+
+```{r}
+setwd("~/Rstudio Universty works/NYPD shooting Project")
+```
+install.packages("readr")
+```{r}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+```
+##1.Importing Data
+
+shooting<-read_csv("NYPD_Shooting_Incident_Data__Historic_.csv")
+
+NYPD_Shooting_Incident_Data_Historic_<-read_csv("NYPD_Shooting_Incident_Data__Historic_.csv")
+View(NYPD_Shooting_Incident_Data_Historic_)
+```{r}
+url <- "https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD"
+shooting <- read_csv(url)
+```
+##Cleaning
+```{r}
+shootinginfo = shooting[,-5, -6]
+head(shootinginfo)
+shootinginfo
+summary(shootinginfo)
+```
+
+### Step 2-Tdying and Transforming Data
+### method to change date  chr to date time
+
+install.packages("chron")
+install.packages("date")
+```{r}
+library(chron)
+library(lubridate)
+library(date)
+```
+
+class
+OCCUR_DATE <- "08/27/2006" 
+OCCUR_DATE data type has to transform from chr to datetype
+```{r}
+OCCUR_DATE <- as.Date("OCCUR_DATE","%m/%d/%y" )
+class(myd(OCCUR_DATE))
+head(shootinginfo)
+summary(shootinginfo)
+shootinginfo$OCCUR_DATE <- mdy(shootinginfo$OCCUR_DATE)
+head(shootinginfo)
+```
+
+
+Occur_Date is changed to date format from the character format
+
+## Step-3
+## Analysis and visualization -1
+### Q- Which boro has the highest number shooting incidents?
+
+```{r}
+shooting <- read_csv(url)
+Shooting_boro <- shooting
+Shooting_boro_count <- Shooting_boro %>% group_by(BORO) %>% count(BORO)
+Shooting_boro_count
+```
+### Ans- From the analysis report its the Brooklyn which has the highest shooting incidents
+
+### Analysis and visualization -2
+### Q-Which race became the highest victim of shooting?
+
+```{r}
+shooting <- read_csv(url)
+Shooting_vic_count <- shooting %>% group_by(VIC_RACE) %>% count(VIC_RACE)
+Shooting_vic_count
+summary(shootinginfo)
+```
+
+### Ans- From the analysis its the black who became the highest number of shooting victim
+
+
+## visualization is visual representation of data in the form of graph or chart or bar or any other format-relation ship between data and images.
+```{r}
+library(tidyverse)
+```
+
+```{r}
+ggplot(data = Shooting_boro_count,
+    mapping =aes(x= n, y=BORO, group = 1 ))+
+    geom_point(size= 3)+
+    geom_line(color = "red")
+```
+   
+    
+### Another Sample for visualization plot
+    
+```{r}
+ggplot(Shooting_boro_count,aes(BORO,n, group=1))+ geom_point()+geom_line()
+```
+### Visualization 3
+
+```{r}
+ggplot(Shooting_vic_count,aes( VIC_RACE, n, group=1))+ geom_point()+geom_line()+theme(text=element_text(size=8), axis.text.x = element_text(angle = 90))
+```
+#### Analysis-Black is the highest victim
+
+## visualization 4
+view(shooting) 
+shooting
+shootinginfo <- read_csv(url)
+```{r}
+shootinginfo %>% ggplot(aes(VIC_RACE,VIC_SEX,color= BORO))+
+  geom_point(size=3, alpha=0.5)+
+  theme(text=element_text(size=8), axis.text.x = element_text(angle = 90))+
+  labs(x= "VIC_RACE", y= "VIC_SEX", title ="NYPD shooting")
+```
+
+### Step 4-Modelling 1.
+```{r}
+shooting <- read_csv(url)
+view(shooting)
+shooting %>% filter(VIC_AGE_GROUP< 50) %>%
+  ggplot(aes(BORO,VIC_AGE_GROUP))+
+  geom_point(aes(color = VIC_RACE,
+  size= VIC_SEX),alpha =0.5)+ geom_smooth(method =lm)+
+facet_wrap(~STATISTICAL_MURDER_FLAG,nrow=1)+
+theme(text=element_text(size=8), axis.text.x = element_text(angle = 90))+
+labs(x= "BORO", y= "Victim Age", title ="NYPD shooting")
+
+```
+
+### Conclusion and Identifying Bias
+ 
+Newyork was some kind of a dream city and I never expect this much shootings from a borough.
+before doing the analysis I thought all the races are victims equally. that was my bias, after doing the visualization and modelling, i came to realize that black race is the highest victim through out these years
+If I go with my bias I couldnt get this result. in Vic_race.
+Racial bias shooting is present from the given NYPD shooting historic report.
+Statistical Murder flag True and false are separated so that reality is revealed
+
+### Modelling 2- Incident_key and Precinct
+
+```{r}
+head(shooting)
+sapply(shooting, class)
+shooting$INCIDENT_KEY <-as.numeric(shooting$INCIDENT_KEY)
+shooting$PRECINCT <- as.numeric(shooting$PRECINCT)
+class("INCIDENT_KEY, PRECINCT")
+plot(shooting$PRECINCT, shooting$INCIDENT_KEY, main= "Scatterplot")
+cor(shooting$PRECINCT, shooting$INCIDENT_KEY)
+help(lm)
+?lm
+#to finf mod
+mod <- lm(shooting$INCIDENT_KEY ~ shooting$PRECINCT)
+summary(mod)
+attributes(mod)
+mod$coefficients
+coef(mod)
+plot(shooting$PRECINCT, shooting$INCIDENT_KEY, main= "Scatterplot")
+abline(mod)
+abline(mod, col =2, lwd = 3)
+plot(shooting$PRECINCT, shooting$INCIDENT_KEY, main= "Scatterplot")
+class("INCIDENT_KEY, PRECINCT")
+plot(shooting$PRECINCT, shooting$INCIDENT_KEY, main= "Scatterplot")
+cor(shooting$PRECINCT, shooting$INCIDENT_KEY)
+abline(mod, col =2, lwd = 3)
+coef(mod)
+confint(mod)
+confint(mod, level =0.99)
+summary(mod)
+anova(mod)
+sqrt(3.69)
+```
+
+### Identifying Bias
+## Conclusion and Identifying Bias
+ 
+Newyork was some kind of a dream city and I never expect this much shootings from a borough.
+before doing the analysis I thought all the races are victims equally. that was my bias, after doing the visualization and modelling, i came to realize that black race is the highest victim through out these years
+If I go with my bias I couldn't get this result. in Vic_race.
+Racial bias shooting is present from the given NYPD shooting historic report.
+ 
+##### My bias was in Vic_race. After prediction from the modelling that bias was identified and cleared.
